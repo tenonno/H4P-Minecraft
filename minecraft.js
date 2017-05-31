@@ -1,9 +1,10 @@
 import blockNames from 'block-names';
 
 import MinecraftBlockManager from 'block-manager';
+import MinecraftEventEmitter from 'event-emitter';
 
 
-class Minecraft extends EventEmitter2 {
+class Minecraft extends MinecraftEventEmitter {
 
 	constructor() {
 		super();

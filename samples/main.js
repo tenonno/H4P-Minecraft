@@ -39,3 +39,27 @@ for (let i = 10; i--;) {
     minecraft.setBlock('grass', 0, i, 0);
 
 }
+
+
+minecraft.setTime(1000);
+
+
+minecraft.commandRequest('getlocalplayername').then((data) => {
+
+	log(data.body.localplayername);
+
+});
+
+minecraft.blocks.stone.put(0, 0, 0);
+
+blocks.stone.onこわれた = (e) => {
+
+	log("こわれた");
+
+};
+
+blocks.diamond_block.onおかれた = (e) => {
+
+	log("おかれた!!!");
+
+};
