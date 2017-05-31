@@ -1,40 +1,13 @@
-/*
-イベント一覧
-BlockPlaced
-BlockBroken
-EndOfDay
-PlayerMessage
-PlayerDied
-PlayerBounced
-PlayerTeleported
-PlayerTravelled
-MobKilled
-MobKilled
-EntitySpawned
-AgentCommand
-MultiplayerRoundStart
-MultiplayerRoundEnd
-CameraUsed
-ItemUsed
-PositionCommand
-*/
-
 import blockNames from 'block-names';
 
+import MinecraftBlockManager from 'block-manager';
 
-class MinecraftBlock extends EventEmitter2 {
-	constructor(name) {
-		super();
-
-		this.name = name;
-
-	}
-}
 
 class Minecraft extends EventEmitter2 {
 
 	constructor() {
 		super();
+
 
 		// API のバージョン
 		this.version = 1;
@@ -51,6 +24,8 @@ class Minecraft extends EventEmitter2 {
 
 		this.blocks = {};
 
+
+		this.listeners = {};
 
 
 
@@ -74,6 +49,7 @@ class Minecraft extends EventEmitter2 {
 			const type = data.body.properties.Type;
 			const blockName = blockNames[type];
 
+
 			this.blocks[blockName].emit('broken', {
 
 
@@ -84,7 +60,7 @@ class Minecraft extends EventEmitter2 {
 
 		for (const key of Object.keys(blockNames)) {
 			const blockName = blockNames[key];
-			this.blocks[blockName] = new MinecraftBlock(blockName);
+			this.blocks[blockName] = new MinecraftBlockManager(blockName, this);
 		}
 
 
@@ -102,21 +78,39 @@ class Minecraft extends EventEmitter2 {
 
 			}
 
+			if (data.header.messagePurpose === 'commandResponse') {
+
+
+				const id = data.header.requestId;
+
+				this.listeners[id](data);
+				delete this.listeners[id];
+
+			}
+
+
 			console.info(data);
 
 		});
 
 	}
 
-	send(purpose, type, body) {
+	send(purpose, type, body, idv = 0) {
+
+		const id = this.id++;
+
 		feeles.ipcRenderer.sendToHost('sendToApp', {
 			body,
 			header: {
 				messagePurpose: purpose,
 				messageType: type,
-				requestId: (this.id++).toString(),
+				requestId: id.toString(),
 				version: this.version
 			}
+		});
+
+		return new Promise((resolve) => {
+			this.listeners[id] = resolve;
 		});
 	}
 
@@ -181,6 +175,18 @@ class Minecraft extends EventEmitter2 {
 		});
 	}
 
+
+	commandRequest(name) {
+
+		return this.send('commandRequest', 'commandRequest', {
+			name,
+			input: {},
+			origin: {},
+			overload: 'default',
+			version: this.version
+		});
+
+	}
 
 
 	kill(name, selector = 'allPlayers') {
