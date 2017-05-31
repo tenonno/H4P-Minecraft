@@ -156,14 +156,14 @@ class Minecraft extends EventEmitter2 {
 	}
 
 
-	setBlock(_name, x, y, z) {
+	setBlock(_name, x, y, z, relative = true) {
 
 		const [name, tileData] = _name.split(':');
 
 		this.send('commandRequest', 'commandRequest', {
 			name: 'setblock',
 			input: {
-				position: this.getPos(x, y, z),
+				position: this.getPos(x, y, z, relative),
 				tileData: tileData | 0,
 				tileName: name
 			},
@@ -230,6 +230,21 @@ class Minecraft extends EventEmitter2 {
 				type: 'player'
 			},
 			overload: 'asOther',
+			version: this.version
+		});
+	}
+
+
+	setTime(time) {
+		this.send('commandRequest', 'commandRequest', {
+			name: 'time set',
+			input: {
+				time
+			},
+			origin: {
+				type: 'player'
+			},
+			overload: 'byNumber',
 			version: this.version
 		});
 	}
